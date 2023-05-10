@@ -218,36 +218,6 @@ describe('311 Condition Evaluation', () => {
       expect(result[1]).to.equal('Hello Multi');
     });
 
-    it('should format the ASCII values from the Geo-validation config', () => {
-      const instance = new ConditionEvaluator({
-        Address: '2207 BEECHWOOD RD',
-        AddressLayer: [{
-          "layerId": 35,
-          "layerName": "Regional Counties",
-          "displayFieldName": "NAME",
-          "attributes": {
-            "NAME": "Prince George&#39;s"
-          }
-        }],
-        OutcomeQuestionCode: {},
-        ServiceQuestionCode: {}
-      });
-  
-      const conditionGroups = [
-        {
-          dependentOn: {
-            clause: 'AND',
-            conditions: [
-              { left: 'AddressLayer[layerName=Regional Counties].attributes.NAME', op: 'neq', right: 'Prince George&#39;s' }
-            ]
-          },
-          message: 'Geo-validation'
-        }
-      ];
-      const result = instance.allMessages(conditionGroups);
-      expect(result).to.deep.equal([]);
-    })
-
     it('should return an empty list when no dependentOn are true', () => {
       const conditionGroups = [
         {
@@ -700,17 +670,11 @@ describe('311 Condition Evaluation', () => {
         expect(result).to.be.true;
       });
 
-      // it('should return true if the left argument is null and right argument is blank string', () => {
-      //   const inst  = new ConditionEvaluator();
-      //   const result = inst.condition({left: false, op: 'eq', right: ''});
-      //   expect(result).to.be.false;
-      // })
-
-      // it('should return true if the left argument is null and right argument is blank string', () => {
-      //   const inst  = new ConditionEvaluator();
-      //   const result = inst.condition({left: null, op: 'eq', right: ''});
-      //   expect(result).to.be.false;
-      // })
+      it('should return true if the left argument is null and right argument is blank string', () => {
+        const inst  = new ConditionEvaluator();
+        const result = inst.condition({left: null, op: 'eq', right: ''});
+        expect(result).to.be.true;
+      })
     });
 
     describe('lte', () => {

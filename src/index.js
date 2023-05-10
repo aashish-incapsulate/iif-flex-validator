@@ -380,30 +380,18 @@ export default class ConditionEvaluator {
       return this.conditionGroup({ clause, conditions });
     }
 
-    // THREE11CAP-7099 - Decodes the ASCII values inside the string datatype values from the Geo-validation config.
-    const decode = (val) => {
-      const txt = document.createElement('textarea');
-      txt.innerHTML = val;
-      return txt.value;
-    };
-    const decodedRight = typeof right === 'string' && right.includes('&#') ? decode(right) : right;
     // if we're working with an attribute; assume its a statement
-    const encodedLeftValue = attribute ? this.statement(attribute) : this.side(left);
-    let leftValue = typeof encodedLeftValue === 'string' && encodedLeftValue.includes('&#') ? decode(encodedLeftValue) : encodedLeftValue;
+    let leftValue = attribute ? this.statement(attribute) : this.side(left);
     (['boolean', 'number'].includes(typeof leftValue) || (leftValue || (leftValue = ''))); // handling false or 0 value
-    let rightValue = this.side(['string', 'boolean', 'number'].includes(typeof value) ? value : value || decodedRight);
+    let rightValue = this.side(['string', 'boolean', 'number'].includes(typeof value) ? value : value || right);
     if (typeof rightValue === 'boolean') { // only for boolean dependency 
-      leftValue = leftValue === 'true' ? true : (leftValue === 'false' || leftValue === '' || leftValue === null ) ? false : leftValue; // passing boolean instead of
+      leftValue = leftValue === 'true' ? true : leftValue === 'false' ? false : leftValue; // passing boolean instead of string
     }
     // above changes are for blank value received in "value field" THREE11CAP-5511
 
     if ((leftValue || typeof leftValue == 'number') && rightValue && !isNaN(leftValue) && !isNaN(rightValue)) {
       leftValue = Number(leftValue);
       rightValue = Number(rightValue);
-    }
-    
-    if (leftValue == false && rightValue == '') {
-      rightValue = false;
     }
     //above changes are for Alert validation getting fired on submission even when the answers are valid.(https://incapsulate.atlassian.net/browse/PGC311-249)
 
@@ -412,7 +400,7 @@ export default class ConditionEvaluator {
       case OPS.gte: return leftValue >= rightValue;
       case OPS.lt: return leftValue < rightValue;
       case OPS.lte: return leftValue <= rightValue;
-      case OPS.eq: return this._areEqual(leftValue === '' ? null : leftValue, rightValue === '' ? null : rightValue) || ([false, null].includes(leftValue) && [false, null].includes(decodedRight));
+      case OPS.eq: return this._areEqual((leftValue === '' ? null : leftValue), (rightValue === '' ? null : rightValue));
       case OPS.neq: return !this._areEqual(leftValue, rightValue);
       case OPS.in: return this._in(leftValue, rightValue);
       case OPS.ct: return this._contains(leftValue, rightValue);
